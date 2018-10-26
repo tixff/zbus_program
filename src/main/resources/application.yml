@@ -1,0 +1,9 @@
+spring:
+  profiles:
+    active: unittest
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.ti.zbus_manager.mapper
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
