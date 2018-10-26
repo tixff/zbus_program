@@ -1,12 +1,10 @@
 package com.ti.zbus_manager;
 
+import io.zbus.mq.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zbus.broker.BrokerConfig;
-import org.zbus.broker.SingleBroker;
-import org.zbus.mq.Consumer;
-import org.zbus.mq.MqConfig;
 
+import java.io.IOException;
 
 
 public class ZbusConsumer {
@@ -18,25 +16,19 @@ public class ZbusConsumer {
 
     public static void consumerMessage() {
         try {
-            BrokerConfig brokerConfig = new BrokerConfig();
-            brokerConfig.setServerAddress("127.0.0.1:15555");
-            SingleBroker singleBroker = new SingleBroker(brokerConfig);
-            MqConfig mqConfig = new MqConfig();
-            mqConfig.setBroker(singleBroker);
-            mqConfig.setMq("mq");
-            //mqConfig.setTopic("mytopic");
-            //mqConfig.setMode(Protocol.MqMode.PubSub);
-            Consumer consumer = new Consumer(mqConfig);
-            //consumer.setTopic("mytopic");
-            consumer.onMessage((msg,cons)->{
-                System.out.println("###############:"+new String(msg.getBody()));
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            Broker broker = new Broker("localhost:15555");
+            ConsumerConfig config = new ConsumerConfig(broker);
+            config.setTopic("xff_topic");  //指定消息队列主题，同时可以指定分组通道
+            config.setMessageHandler(new MessageHandler() {
+                @Override
+                public void handle(Message msg, MqClient client) throws IOException {
+                    System.out.println(msg); //消费处理
                 }
             });
-           consumer.start();
+
+            Consumer consumer = new Consumer(config);
+            consumer.start();
+
         } catch (Exception e) {
             logger.error("zbus消费队列出错:{}", e);
         }

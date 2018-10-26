@@ -41,9 +41,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.zbus</groupId>
+            <groupId>io.zbus</groupId>
             <artifactId>zbus</artifactId>
-            <version>6.2.6</version>
+            <version>0.9.0</version>
         </dependency>
     </dependencies>
 
