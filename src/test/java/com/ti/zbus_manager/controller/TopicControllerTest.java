@@ -54,6 +54,6 @@ public class TopicControllerTest extends AbstractControllerTest {
     @Transactional
     @Rollback
     public void findTopic() throws Exception {
-        mockMvc.perform(get("/find").param("name", "luzhou_topic")).andDo(print());
+        mockMvc.perform(get("/find").param("name", "luzhou_topic"));
     }
 }

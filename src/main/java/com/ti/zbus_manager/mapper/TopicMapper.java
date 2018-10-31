@@ -11,4 +11,6 @@ public interface TopicMapper {
     void deleteTopic(Topic t);
 
     Topic findTopic(Topic topic);
+
+    Topic findTopicByName(String topicName);
 }

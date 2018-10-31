@@ -18,4 +18,8 @@
     <select id="findTopic" parameterType="com.ti.zbus_manager.entities.Topic" resultMap="BaseResultMap">
         select * from topic where name=#{name};
     </select>
+
+    <select id="findTopicByName" parameterType="string" resultMap="BaseResultMap">
+        select * from topic where name=#{topicName};
+    </select>
 </mapper>

@@ -18,17 +18,21 @@ public class ZbusConsumer {
         try {
             Broker broker = new Broker("localhost:15555");
             ConsumerConfig config = new ConsumerConfig(broker);
+            config.setConsumeTimeout(1000*3);
             config.setTopic("xff_topic");  //指定消息队列主题，同时可以指定分组通道
-            config.setMessageHandler(new MessageHandler() {
+            System.out.println("################连接数："+config.getConnectionCount());
+            Consumer consumer = new Consumer(config);
+            consumer.start(new MessageHandler() {
                 @Override
-                public void handle(Message msg, MqClient client) throws IOException {
-                    System.out.println(msg); //消费处理
+                public void handle(Message message, MqClient mqClient) throws IOException {
+                    if (message != null) {
+                        String remoteAddr = message.getRemoteAddr();
+                        System.out.println("remoteAddr:" + remoteAddr);
+                        System.out.println(message.getBodyString());
+
+                    }
                 }
             });
-
-            Consumer consumer = new Consumer(config);
-            consumer.start();
-
         } catch (Exception e) {
             logger.error("zbus消费队列出错:{}", e);
         }

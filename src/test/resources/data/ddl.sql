@@ -11,3 +11,11 @@ CREATE TABLE `topic` (
   PRIMARY KEY (`id`)
 );
 
+CREATE TABLE `topic_analyze` (
+  `id` int(11) NOT NULL,
+  `topic_name` varchar(255) DEFAULT NULL,
+  `connect_time` datetime DEFAULT NULL,
+  `connect_count` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+
