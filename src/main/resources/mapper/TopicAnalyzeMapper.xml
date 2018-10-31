@@ -6,6 +6,11 @@
         <result column="topic_name" property="topicName"/>
         <result column="connect_time" property="connectTime"/>
         <result column="connect_count" property="connectCount"/>
+        <result column="received_time" property="receivedTime"/>
+        <result column="received_desc" property="receivedDesc"/>
+        <result column="minute" property="minute"/>
+        <!--辅助字段-->
+        <result column="received_count" property="receivedCount"/>
     </resultMap>
 
     <select id="getAllInfo" resultMap="BaseResultMap">
@@ -13,7 +18,8 @@
     </select>
 
     <insert id="addInfo" parameterType="com.ti.zbus_manager.entities.TopicAnalyze">
-        insert into topic_analyze(topic_name,connect_time,connect_count,received_time,received_desc) values(#{topicName},#{connectTime},#{connectCount},#{receivedTime},#{receivedDesc})
+        insert into topic_analyze(`topic_name`,`connect_time`,`connect_count`,`received_time`,`received_desc`,`minute`)
+         values(#{topicName},#{connectTime},#{connectCount},#{receivedTime},#{receivedDesc},#{minute})
     </insert>
 
     <select id="findByNameAndTime" parameterType="string" resultMap="BaseResultMap">
@@ -23,4 +29,16 @@
     <update id="addConnectCount" parameterType="com.ti.zbus_manager.entities.TopicAnalyze">
         update topic_analyze set connect_count=#{connectCount} where topic_name=#{topicName}
     </update>
+
+    <select id="getConnectCountByDateRange" parameterType="com.ti.zbus_manager.parameter.AnalyzeQueryParameter" resultType="int">
+        select count(*) from topic_analyze where topic_name=#{topicName} and received_time &gt;#{startTime} and received_time&lt;#{endTime}
+    </select>
+
+    <select id="getAnalyzeInfoByDateRange" parameterType="com.ti.zbus_manager.parameter.AnalyzeQueryParameter" resultMap="BaseResultMap">
+        select count(*) received_count,topic_name,received_time,`minute`
+        from topic_analyze
+        where received_time &gt; #{startTime} and received_time&lt;#{endTime}
+        group by topic_name,`minute`
+        ORDER BY received_time
+    </select>
 </mapper>

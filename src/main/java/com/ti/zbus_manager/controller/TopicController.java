@@ -18,7 +18,7 @@ public class TopicController {
     private TopicService service;
 
     @GetMapping("/add")
-    @ApiOperation(value = "添加topic", notes = "添加topic")
+    @ApiOperation(value = "添加主题", notes = "添加主题")
     public void addTopic(Topic topic, HttpServletRequest request) {
         String ipAddress = ZbusUtils.getIpAddress(request);
         topic.setIp(ipAddress);
@@ -27,7 +27,7 @@ public class TopicController {
     }
 
     @GetMapping("find")
-    @ApiOperation(value = "查找Topic", notes = "根据名字查找")
+    @ApiOperation(value = "查找主题", notes = "根据主题名字查找")
     public Topic findTopic(Topic topic) {
         return service.findTopic(topic);
     }

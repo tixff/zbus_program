@@ -2,7 +2,6 @@ package com.ti.zbus_manager.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.annotations.ApiOperation;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -26,10 +25,19 @@ public class TopicAnalyze {
     private int connectCount;
 
     @ApiModelProperty("消息接收时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private Date receivedTime;
 
     @ApiModelProperty("消息内容")
     private String receivedDesc;
+
+    @ApiModelProperty("接收时间的分钟数")
+    private int minute;
+
+    //辅助字段
+    @ApiModelProperty("接收消息的数量")
+    private int receivedCount;
 
     @Override
     public String toString() {
@@ -38,6 +46,9 @@ public class TopicAnalyze {
                 ", topicName='" + topicName + '\'' +
                 ", connectTime=" + connectTime +
                 ", connectCount=" + connectCount +
+                ", receivedTime=" + receivedTime +
+                ", receivedDesc='" + receivedDesc + '\'' +
+                ", minute=" + minute +
                 '}';
     }
 }
