@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <topic_analyze id="1" topic_name="topic1" connect_count="85"/>
+    <topic_analyze id="2" topic_name="topic2" connect_count="65"/>
+</dataset>
