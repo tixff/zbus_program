@@ -1,10 +1,8 @@
 package com.ti.zbus_manager.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,13 +20,22 @@ public class ConsumerVo {
     private String topicName;
 
     @ApiModelProperty("接收时间字符串格式")
-    public String getDateStr(){
+    public String getDateStr() {
         return new SimpleDateFormat("yyyy-MM-dd hh:mm").format(date);
     }
 
     @ApiModelProperty("接收数量字符串格式")
-    public String getCountStr(){
+    public String getCountStr() {
         return String.valueOf(count);
+    }
+
+    public ConsumerVo(Date date, int count, String topicName) {
+        this.date = date;
+        this.count = count;
+        this.topicName = topicName;
+    }
+
+    public ConsumerVo() {
     }
 
     public static void main(String[] args) {

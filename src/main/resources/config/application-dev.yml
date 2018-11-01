@@ -33,3 +33,7 @@ logging:
   level:
     root: INFO
     org.springframework: INFO
+
+#zubs配置
+zbus:
+  host: 127.0.0.1:15555

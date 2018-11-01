@@ -13,5 +13,5 @@ public interface TopicAnalyzeService {
 
     void produceMessage(String topicName,String message);
 
-    HashMap<String,ArrayList<TopicAnalyze>> getAnalyzeData(Date date);
+    HashMap<String,ArrayList> getAnalyzeData(Date date);
 }

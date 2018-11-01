@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <script src="https://img.hcharts.cn/highcharts/highcharts.js"></script>
+    <script src="https://img.hcharts.cn/highcharts/modules/exporting.js"></script>
+    <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+
+    <script src="//cdn.bootcss.com/angular.js/1.5.6/angular.min.js"></script>
+    <script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
+    <script type="text/javascript">
+        var stompClient = null;
+        var resultData;
+        var app = angular.module('app', []);
+        app.controller('MainController', function ($scope) {
+
+            $scope.data = {
+                //连接状态
+                connected: false,
+                //消息
+                message: '',
+                rows: []
+            };
+
+            //连接
+            $scope.connect = function () {
+                var socket = new SockJS('/my-websocket');
+                stompClient = Stomp.over(socket);
+                stompClient.connect({}, function (frame) {
+                    // 注册发送消息
+                    /*stompClient.subscribe('/topic/send', function (msg) {
+                        $scope.data.rows.push(JSON.parse(msg.body));
+                        $scope.data.connected = true;
+                        $scope.$apply();
+                    });*/
+                    // 注册推送时间回调
+                    /*stompClient.subscribe('/topic/callback', function (r) {
+                        $scope.data.time = '当前服务器时间：' + r.body;
+                        $scope.data.connected = true;
+                        $scope.$apply();
+                    });*/
+
+                    // 信息回调
+                    stompClient.subscribe('/topic/topicAnalyze', function (r) {
+                        $scope.data.info = '服务器返回数据：' + r.body;
+                        //前端数据处理
+                        var resultData = JSON.parse(r.body);
+                        var dateRange = resultData.dateRange;
+                        var data = resultData.series;
+                        //*********************************************************************************
+                        var chart = Highcharts.chart('container', {
+                            chart: {
+                                type: 'spline'
+                            },
+                            title: {
+                                text: 'topic 接收消息情况'
+                            },
+                            subtitle: {
+                                text: '数据来源: zubs database'
+                            },
+                            xAxis: {
+                                categories: dateRange
+                            },
+                            yAxis: {
+                                title: {
+                                    text: '接收数量'
+                                },
+                                labels: {
+                                    formatter: function () {
+                                        return this.value + '个';
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                crosshairs: true,
+                                shared: true
+                            },
+                            plotOptions: {
+                                spline: {
+                                    marker: {
+                                        radius: 4,
+                                        lineColor: '#666666',
+                                        lineWidth: 1
+                                    }
+                                }
+                            },
+                            series: data
+                        });
+                        //*********************************************************************************
+                        $scope.data.connected = true;
+                        $scope.$apply();
+                    });
+                    $scope.data.connected = true;
+                    $scope.$apply();
+                });
+            };
+
+            $scope.disconnect = function () {
+                if (stompClient != null) {
+                    stompClient.disconnect();
+                }
+                $scope.data.connected = false;
+            }
+
+            $scope.send = function () {
+                stompClient.send("/app/getAnalyze", {},
+                    $scope.data.message
+                );
+            }
+        });
+    </script>
+</head>
+<body ng-app="app" ng-controller="MainController">
+<label>WebSocket连接状态:</label>
+<button type="button" ng-disabled="data.connected" ng-click="connect()">连接</button>
+<button type="button" ng-click="disconnect()"
+        ng-disabled="!data.connected">断开
+</button>
+<br/>
+<br/>
+<div ng-show="data.connected">
+    <hr/>
+    <br/> <input type="text"
+                 ng-model="data.message" placeholder="请输入时间"/>
+    <button ng-click="send()" type="button">获取信息</button>
+    <br/> <br/> 消息列表： <br/>
+</div>
+<div id="container" style="min-width:400px;height:400px"></div>
+</body>
+</html>

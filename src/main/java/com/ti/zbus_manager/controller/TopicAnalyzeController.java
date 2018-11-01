@@ -1,17 +1,15 @@
 package com.ti.zbus_manager.controller;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.ti.zbus_manager.entities.TopicAnalyze;
 import com.ti.zbus_manager.service.TopicAnalyzeService;
-import com.ti.zbus_manager.service.impl.TopicAnalyzeServiceImpl;
 import com.ti.zbus_manager.util.DateUtils;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +24,7 @@ public class TopicAnalyzeController {
     @Autowired
     private TopicAnalyzeService service;
 
+
     @GetMapping("getAll")
     @ApiOperation(value = "获取所有消费者信息", notes = "获取所有消费者信息")
     public void getAllInfo() {
@@ -38,8 +37,8 @@ public class TopicAnalyzeController {
     @GetMapping("addConsumer")
     @ApiOperation(value = "添加消费者", notes = "添加消费者")
     public void addConsumer(
-           // @ApiParam(name = "topicName", value = "主题名称")
-                    String topicName) {
+            // @ApiParam(name = "topicName", value = "主题名称")
+            String topicName) {
         service.addConsumer(topicName);
     }
 
@@ -54,17 +53,32 @@ public class TopicAnalyzeController {
 
     @GetMapping("analyzeData")
     @ApiOperation(value = "获取消费信息", notes = "获取消费信息")
-    public HashMap<String, ArrayList<TopicAnalyze>> getAnalyzeData(
+    public HashMap<String, ArrayList> getAnalyzeData(
             //@ApiParam(name = "time",format ="yyyy-MM-dd hh:mm",value = "截止时间")
-                    String time) {
+            String time) {
         Date date = null;
         try {
-            date = DateUtils.format.parse(time);
+            date = DateUtils.getDateFormat(DateUtils.YYYY_MM_DD_hh_mm).parse(time);
         } catch (ParseException e) {
             e.printStackTrace();
             logger.error("时间参数格式错误");
         }
-        HashMap<String, ArrayList<TopicAnalyze>> resultData = service.getAnalyzeData(date);
+        HashMap<String, ArrayList> resultData = service.getAnalyzeData(date);
+        return resultData;
+    }
+
+    @MessageMapping("/getAnalyze")
+    @SendTo("/topic/topicAnalyze")
+    public HashMap<String, ArrayList> sendInfo(String time) throws Exception {
+        System.out.println("前端信息：" + time);
+        Date date = null;
+        try {
+            date = DateUtils.getDateFormat(DateUtils.YYYY_MM_DD_hh_mm).parse(time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            logger.error("时间参数格式错误");
+        }
+        HashMap<String, ArrayList> resultData = service.getAnalyzeData(date);
         return resultData;
     }
 

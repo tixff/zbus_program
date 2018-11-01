@@ -37,7 +37,7 @@
     <select id="getAnalyzeInfoByDateRange" parameterType="com.ti.zbus_manager.parameter.AnalyzeQueryParameter" resultMap="BaseResultMap">
         select count(*) received_count,topic_name,received_time,`minute`
         from topic_analyze
-        where received_time &gt; #{startTime} and received_time&lt;#{endTime}
+        where received_time &gt; #{startTime} and received_time&lt;=#{endTime}
         group by topic_name,`minute`
         ORDER BY received_time
     </select>
