@@ -27,6 +27,7 @@
                 var socket = new SockJS('/my-websocket');
                 stompClient = Stomp.over(socket);
                 stompClient.connect({}, function (frame) {
+                    $scope.data.connected = true;
                     // 注册发送消息
                     /*stompClient.subscribe('/topic/send', function (msg) {
                         $scope.data.rows.push(JSON.parse(msg.body));
@@ -123,8 +124,8 @@
     <br/> <input type="text"
                  ng-model="data.message" placeholder="请输入时间"/>
     <button ng-click="send()" type="button">获取信息</button>
-    <br/> <br/> 消息列表： <br/>
+    <br/>
 </div>
-<div id="container" style="min-width:400px;height:400px"></div>
+<div ng-show="data.connected" id="container" style="min-width:400px;height:400px"></div>
 </body>
 </html>

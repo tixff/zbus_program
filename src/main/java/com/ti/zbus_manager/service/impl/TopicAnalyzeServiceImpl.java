@@ -162,7 +162,9 @@ public class TopicAnalyzeServiceImpl implements TopicAnalyzeService {
             dateList.add(minuteAgoTimeStr);
         }
         resultMap.put("dateRange", dateList);
-
+        if (list == null || list.size() < 1) {
+            return resultMap;
+        }
         //获取名称list
         ArrayList<String> topicNames = new ArrayList<>();
         list.forEach(o -> {
