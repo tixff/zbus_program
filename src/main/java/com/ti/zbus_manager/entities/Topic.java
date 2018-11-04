@@ -1,6 +1,5 @@
 package com.ti.zbus_manager.entities;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,4 +30,7 @@ public class Topic {
 
     @ApiModelProperty("添加者的ip")
     private String ip;
+
+    @ApiModelProperty("主题描述")
+    private String desc;
 }

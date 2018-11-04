@@ -9,10 +9,11 @@
         <result column="update_time" property="updateTime"/>
         <result column="delete_time" property="deleteTime"/>
         <result column="status" property="status"/>
+        <result column="desc" property="desc"/>
     </resultMap>
 
     <insert id="addTopic" parameterType="com.ti.zbus_manager.entities.Topic">
-        insert into topic(name,ip,create_time) values(#{name},#{ip},#{createTime})
+        insert into topic(`name`,ip,create_time,`desc`) values(#{name},#{ip},#{createTime},#{desc})
     </insert>
 
     <select id="findTopic" parameterType="com.ti.zbus_manager.entities.Topic" resultMap="BaseResultMap">
@@ -21,5 +22,9 @@
 
     <select id="findTopicByName" parameterType="string" resultMap="BaseResultMap">
         select * from topic where name=#{topicName};
+    </select>
+
+    <select id="getALlTopic" resultMap="BaseResultMap">
+        select * from topic;
     </select>
 </mapper>

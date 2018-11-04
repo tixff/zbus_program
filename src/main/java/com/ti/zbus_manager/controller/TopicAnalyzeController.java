@@ -3,6 +3,7 @@ package com.ti.zbus_manager.controller;
 import com.ti.zbus_manager.entities.TopicAnalyze;
 import com.ti.zbus_manager.service.TopicAnalyzeService;
 import com.ti.zbus_manager.util.DateUtils;
+import com.ti.zbus_manager.vo.ResultMessage;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.text.ParseException;
@@ -38,22 +40,34 @@ public class TopicAnalyzeController {
         });
     }
 
-    @GetMapping("addConsumer")
+    @PostMapping("addConsumer")
     @ApiOperation(value = "添加消费者", notes = "添加消费者")
-    public void addConsumer(
+    public ResultMessage addConsumer(
             // @ApiParam(name = "topicName", value = "主题名称")
             String topicName) {
-        service.addConsumer(topicName);
+        try {
+            service.addConsumer(topicName);
+            return new ResultMessage("添加消费者成功");
+        } catch (Exception e) {
+            logger.error("添加消费者失败");
+            return new ResultMessage("添加消费者失败");
+        }
     }
 
-    @GetMapping("produce")
+    @PostMapping("produce")
     @ApiOperation(value = "根据主题发送消息", notes = "根据主题发送消息")
-    public void produceMessage(
+    public ResultMessage produceMessage(
             //@ApiParam(name = "topicName", value = "主题名字")
             String topicName,
             //@ApiParam(name = "message", value = "消息内容")
             String message) {
-        service.produceMessage(topicName, message);
+        try {
+            service.produceMessage(topicName, message);
+            return new ResultMessage("发送消息成功");
+        } catch (Exception e) {
+            logger.error("发送消息失败");
+            return new ResultMessage("发送消息失败");
+        }
     }
 
     @GetMapping("analyzeData")
@@ -87,11 +101,11 @@ public class TopicAnalyzeController {
         return resultData;
     }
 
-    @Scheduled(fixedRate = 1000*5)
-    public Object sendInfoRegular(){
+    @Scheduled(fixedRate = 1000 * 5)
+    public Object sendInfoRegular() {
         System.out.println("正在定时发送消息......");
         HashMap<String, ArrayList> resultData = service.getAnalyzeData(new Date());
-        messagingTemplate.convertAndSend("/topic/topicAnalyze",resultData);
+        messagingTemplate.convertAndSend("/topic/dynamic", resultData);
         return "topicAnalyze";
     }
 }

@@ -10,7 +10,6 @@
     <script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
     <script type="text/javascript">
         var stompClient = null;
-        var resultData;
         var app = angular.module('app', []);
         app.controller('MainController', function ($scope) {
 
@@ -22,24 +21,65 @@
                 rows: []
             };
 
+            $scope.manager = function () {
+                window.location.href = "/";
+            };
             //连接
             $scope.connect = function () {
                 var socket = new SockJS('/my-websocket');
                 stompClient = Stomp.over(socket);
                 stompClient.connect({}, function (frame) {
                     $scope.data.connected = true;
-                    // 注册发送消息
-                    /*stompClient.subscribe('/topic/send', function (msg) {
-                        $scope.data.rows.push(JSON.parse(msg.body));
+                    // 动态接收数据
+                    stompClient.subscribe('/topic/dynamic', function (r) {
+                        var resultData = JSON.parse(r.body);
+                        var dateRange = resultData.dateRange;
+                        var data = resultData.series;
+                        //*********************************************************************************
+                        var chart = Highcharts.chart('container', {
+                            chart: {
+                                type: 'spline'
+                            },
+                            title: {
+                                text: 'topic 动态接收消息情况'
+                            },
+                            subtitle: {
+                                text: '数据来源: zubs database'
+                            },
+                            xAxis: {
+                                categories: dateRange
+                            },
+                            yAxis: {
+                                title: {
+                                    text: '接收数量'
+                                },
+                                labels: {
+                                    formatter: function () {
+                                        return this.value + '个';
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                crosshairs: true,
+                                shared: true
+                            },
+                            plotOptions: {
+                                spline: {
+                                    marker: {
+                                        radius: 4,
+                                        lineColor: '#666666',
+                                        lineWidth: 1
+                                    }
+                                }
+                            },
+                            series: data
+                        });
+                        //*********************************************************************************
                         $scope.data.connected = true;
                         $scope.$apply();
-                    });*/
-                    // 注册推送时间回调
-                    /*stompClient.subscribe('/topic/callback', function (r) {
-                        $scope.data.time = '当前服务器时间：' + r.body;
                         $scope.data.connected = true;
                         $scope.$apply();
-                    });*/
+                    });
 
                     // 信息回调
                     stompClient.subscribe('/topic/topicAnalyze', function (r) {
@@ -49,7 +89,7 @@
                         var dateRange = resultData.dateRange;
                         var data = resultData.series;
                         //*********************************************************************************
-                        var chart = Highcharts.chart('container', {
+                        var chart = Highcharts.chart('containerS', {
                             chart: {
                                 type: 'spline'
                             },
@@ -91,8 +131,6 @@
                         $scope.data.connected = true;
                         $scope.$apply();
                     });
-                    $scope.data.connected = true;
-                    $scope.$apply();
                 });
             };
 
@@ -114,18 +152,23 @@
 <body ng-app="app" ng-controller="MainController">
 <label>WebSocket连接状态:</label>
 <button type="button" ng-disabled="data.connected" ng-click="connect()">连接</button>
-<button type="button" ng-click="disconnect()"
-        ng-disabled="!data.connected">断开
-</button>
+<button type="button" ng-click="disconnect()" ng-disabled="!data.connected">断开</button>
+<button type="button" ng-click="manager()" >go to manager</button>
 <br/>
 <br/>
 <div ng-show="data.connected">
     <hr/>
-    <br/> <input type="text"
-                 ng-model="data.message" placeholder="请输入时间"/>
-    <button ng-click="send()" type="button">获取信息</button>
+    <!--<label>{{data.info}}</label><br/>-->
     <br/>
 </div>
 <div ng-show="data.connected" id="container" style="min-width:400px;height:400px"></div>
+<hr/>
+<div ng-show="data.connected">
+    <br/> <input type="text" ng-model="data.message" placeholder="请输入时间"/>
+    <button ng-click="send()" type="button">获取信息</button>
+</div>
+<div ng-show="data.connected" id="containerS" style="min-width:400px;height:400px;margin-top: auto">
+
+</div>
 </body>
 </html>

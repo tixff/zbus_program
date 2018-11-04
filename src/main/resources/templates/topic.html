@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>bootstrap案例</title>
+    <!-- Bootstrap 核心 CSS 文件 -->
+    <link href="http://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!--font-awesome 核心我CSS 文件-->
+    <link href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+    <!--jquery-->
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            //获取所有主题
+            $.post("getAllTopic", function (data) {
+                for (var i in data) {
+                    $("#consumers").append("<option value='" + data[i].name + "'>" + data[i].name + "</option>");
+                    $("#produce").append("<option value='" + data[i].name + "'>" + data[i].name + "</option>");
+                }
+            });
+
+            //添加主题
+            $("#add").click(function () {
+                var n = $("#name").val();
+                var d = $("#desc").val();
+                if (n == null || n == '' || n == undefined || n == "") {
+                    alert("请输入主题名称");
+                    return;
+                }
+                if (d == null || d == '' || d == undefined || d == "") {
+                    alert("请输入主题描述");
+                    return;
+                }
+                $.post("add", {'name': n, 'desc': d}, function (result) {
+                    alert("message:" + result.message);
+                });
+            });
+
+            //添加消费者
+            $("#addConsumer").click(function () {
+                var topicName = $("#consumers").val();
+                $.post("addConsumer", {'topicName': topicName}, function (result) {
+                    alert("message:" + result.message);
+                });
+            });
+
+            //发送消息
+            $("#produceMessage").click(function () {
+                var topicName = $("#produce").val();
+                var message = $("#info").val();
+                $.post("produce", {'topicName': topicName, 'message': message}, function (result) {
+                    alert("message:" + result.message);
+                });
+            });
+
+            //跳转到图表页面
+            $("#chart").click(function () {
+                window.location.href = "chart";
+            });
+        });
+    </script>
+    <style type="text/css">
+        .form {
+            background: rgba(255, 255, 255, 0.2);
+            width: 400px;
+            margin: 100px auto;
+        }
+
+        .fa {
+            display: inline-block;
+            top: 27px;
+            left: 6px;
+            position: relative;
+            color: #ccc;
+        }
+
+        input[type="text"], input[type="password"] {
+            padding-left: 26px;
+        }
+
+    </style>
+</head>
+<body>
+<!--添加主题-->
+<div class="form row">
+    <form class="form-horizontal col-sm-offset-3 col-md-offset-3">
+        <input type="button" id="chart" name="chart" class="btn btn-success pull-right" value="go consumer trend chart"/><br/>
+        <h3 class="form-title">Add topic</h3>
+        <div class="col-sm-9 col-md-9">
+            <div class="form-group">
+                <i class="fa fa-user fa-lg"></i>
+                <input class="form-control required" type="text" id="name" placeholder="topicName" name="name" autofocus="autofocus" maxlength="20"/>
+            </div>
+            <div class="form-group">
+                <i class="fa fa-user fa-lg"></i>
+                <input class="form-control required" type="text" id="desc" placeholder="description" name="name" autofocus="autofocus" maxlength="20"/>
+            </div>
+            <div class="form-group">
+                <input type="button" id="add" name="add" class="btn btn-success pull-right" value="add"/>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!--添加consumer-->
+<div class="form row">
+    <form class="form-horizontal col-sm-offset-3 col-md-offset-3">
+        <h3 class="form-title">Add consumer</h3>
+        <div class="col-sm-9 col-md-9">
+            <div class="form-group">
+                <select id="consumers" class="form-control required"></select>
+            </div>
+            <div class="form-group">
+                <input type="button" id="addConsumer" name="addConsumer" class="btn btn-success pull-right" value="addConsumer"/>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!--发送消息-->
+<div class="form row">
+    <form class="form-horizontal col-sm-offset-3 col-md-offset-3">
+        <h3 class="form-title">Produce message</h3>
+        <div class="col-sm-9 col-md-9">
+            <div class="form-group">
+                <select id="produce" class="form-control required"></select>
+            </div>
+            <div class="form-group">
+                <i class="fa fa-user fa-lg"></i>
+                <input class="form-control required" type="text" id="info" placeholder="produce message" name="info" autofocus="autofocus" maxlength="20"/>
+            </div>
+            <div class="form-group">
+                <input type="button" id="produceMessage" name="produceMessage" class="btn btn-success pull-right" value="produceMessage"/>
+            </div>
+        </div>
+    </form>
+</div>
+</div>
+</body>
+</html>

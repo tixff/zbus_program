@@ -2,6 +2,8 @@ package com.ti.zbus_manager.mapper;
 
 import com.ti.zbus_manager.entities.Topic;
 
+import java.util.ArrayList;
+
 public interface TopicMapper {
 
     void addTopic(Topic t);
@@ -13,4 +15,6 @@ public interface TopicMapper {
     Topic findTopic(Topic topic);
 
     Topic findTopicByName(String topicName);
+
+    ArrayList<Topic> getALlTopic();
 }

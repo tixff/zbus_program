@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 @Service
@@ -37,5 +38,17 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public Topic findTopic(Topic topic) {
         return mapper.findTopic(topic);
+    }
+
+    @Override
+    public ArrayList<Topic> getAllTopic() {
+        ArrayList<Topic> aLlTopic = new ArrayList<>();
+        try{
+            aLlTopic = mapper.getALlTopic();
+            return aLlTopic;
+        }catch (Exception e){
+            logger.error("获取所有主题信息失败");
+            return aLlTopic;
+        }
     }
 }

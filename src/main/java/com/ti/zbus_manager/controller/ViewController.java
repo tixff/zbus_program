@@ -6,8 +6,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class ViewController {
 
+    @GetMapping("/chart")
+    public String chart() {
+        return "chart";
+    }
+
     @GetMapping("/")
-    public String index() {
-        return "index";
+    public String manager(){
+        return "topic";
     }
 }
