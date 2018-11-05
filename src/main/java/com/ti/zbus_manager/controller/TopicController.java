@@ -28,9 +28,9 @@ public class TopicController {
         String ipAddress = ZbusUtils.getIpAddress(request);
         topic.setIp(ipAddress);
         try {
-            service.addTopic(topic);
-            return new ResultMessage("添加主题成功");
-        }catch (Exception e){
+            ResultMessage resultMessage = service.addTopic(topic);
+            return resultMessage;
+        } catch (Exception e) {
             logger.error("添加主题失败");
             return new ResultMessage("添加主题失败");
         }
@@ -43,7 +43,7 @@ public class TopicController {
     }
 
     @PostMapping("getAllTopic")
-    public ArrayList<Topic> getAllTopic(){
+    public ArrayList<Topic> getAllTopic() {
         ArrayList<Topic> allTopic = service.getAllTopic();
         return allTopic;
     }
