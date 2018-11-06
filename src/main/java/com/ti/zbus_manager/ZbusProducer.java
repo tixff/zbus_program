@@ -4,7 +4,6 @@ package com.ti.zbus_manager;
 import io.zbus.mq.Broker;
 import io.zbus.mq.Message;
 import io.zbus.mq.Producer;
-import io.zbus.mq.ProducerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,19 +24,19 @@ public class ZbusProducer {
     public static void sendMsg(String data) throws Exception {
 
 
-        Broker broker = new Broker("localhost:15555");
+        Broker broker = new Broker("www.xffti.top:15555");
         Producer p = new Producer(broker);
         //创建topic
-        //p.declareTopic("xff_topic");    //当确定队列不存在需创建
-        p.removeTopic("xff_topic");
-       /* Message msg = new Message();
+        p.declareTopic("xff_topic");    //当确定队列不存在需创建
+        //p.removeTopic("xff_topic");
+       Message msg = new Message();
         //设置topic
         msg.setTopic("xff_topic");       //设置消息主题
         //msg.setTag("oo.account.pp"); //可以设置消息标签
         msg.setBody(data);
         System.out.println(data);
         Message res = p.publish(msg);
-        System.out.println(res);*/
+        System.out.println(res);
 
         broker.close();
 

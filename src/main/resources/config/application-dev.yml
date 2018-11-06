@@ -36,4 +36,4 @@ logging:
 
 #zubs配置
 zbus:
-  host: 127.0.0.1:15555
+  host: localhost:15555
