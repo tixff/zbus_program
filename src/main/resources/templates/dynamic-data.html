@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+<head>
+    <meta charset="utf-8">
+    <script src="https://img.hcharts.cn/highcharts/highcharts.js"></script>
+    <script src="https://img.hcharts.cn/highcharts/modules/exporting.js"></script>
+    <script src="https://img.hcharts.cn/highcharts-plugins/highcharts-zh_CN.js"></script>
+
+    <script src="//cdn.bootcss.com/angular.js/1.5.6/angular.min.js"></script>
+    <script src="https://cdn.bootcss.com/sockjs-client/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdn.bootcss.com/stomp.js/2.3.3/stomp.min.js"></script>
+    <!--jquery-->
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
+</head>
+<body ng-app="app" ng-controller="MainController">
+<!--echart-->
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
+<script type="text/javascript" src="https://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
+<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
+
+<label>WebSocket连接状态:</label>
+<button type="button" ng-disabled="data.connected" ng-click="connect()">连接</button>
+<button type="button" ng-click="disconnect()" ng-disabled="!data.connected">断开</button>
+<button type="button" ng-click="manager()">go to manager</button>
+<br/>
+<hr/>
+
+<!--动态消费数据-->
+<div ng-show="data.connected">
+    选择topic:<select id="dytp" class="form-control required" onchange="dytpChange()"></select>
+    <!--<button ng-click="submitTopic()" type="button">确定</button>-->
+</div>
+<div ng-show="data.connected" id="dcontainer" style="width:100%;height:400px;"></div>
+
+<!--动态生产数据-->
+<div ng-show="data.connected">
+    选择topic:<select id="dypr" class="form-control required" onchange="dyprChange()"></select>
+    <!--<button ng-click="submitTopic()" type="button">确定</button>-->
+</div>
+<div ng-show="data.connected" id="pcontainer" style="width:100%;height:400px;"></div>
+
+
+<!--静态数据-->
+<!--<div ng-show="data.connected">
+    <br/> <input type="text" ng-model="data.message" placeholder="请输入时间"/>
+    <select id="topic" class="form-control required"></select>
+    <button ng-click="send()" type="button">获取信息</button>
+</div>
+<br/>
+<div ng-show="data.connected" id="econtainer" style="width:100%;height:400px;margin-top: auto"></div>-->
+
+<script type="text/javascript">
+    function dytpChange() {
+        time1 = [];
+        data1 = [];
+    }
+
+    function dyprChange() {
+        time2 = [];
+        data2 = [];
+    }
+
+    //获取所有主题
+    $.post("getAllTopic", function (data) {
+        for (var i in data) {
+            //$("#topic").append("<option value='" + data[i].name + "'>" + data[i].name + "</option>");
+            $("#dytp").append("<option value='" + data[i].name + "'>" + data[i].name + "</option>");
+            $("#dypr").append("<option value='" + data[i].name + "'>" + data[i].name + "</option>");
+        }
+    });
+
+    //var dom = document.getElementById("econtainer");
+    var dm = document.getElementById("dcontainer");
+    var pm = document.getElementById("pcontainer");
+
+    //var myChart = echarts.init(dom);
+    var mChart = echarts.init(dm);
+    var pChart = echarts.init(pm);
+
+    option = null;
+    var time = [];
+    var data = [];
+
+    var time1 = [];
+    var data1 = [];
+
+    var time2 = [];
+    var data2 = [];
+    //*****************************************WebSocket**************************************
+    var stompClient = null;
+    var app = angular.module('app', []);
+    app.controller('MainController', function ($scope) {
+
+        $scope.data = {
+            //连接状态
+            connected: false,
+            //消息
+            message: ''
+        };
+
+        $scope.manager = function () {
+            window.location.href = "/";
+        };
+        //连接
+        $scope.connect = function () {
+            var socket = new SockJS('/my-websocket');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                $scope.data.connected = true;
+
+                console.log("连接状态:" + $scope.data.connected);
+                // 动态接收消费数据
+                stompClient.subscribe('/topic/echartdynamic', function (r) {
+                    var resultData = JSON.parse(r.body);
+                    time1 = [];
+                    data1 = [];
+                    var tname = $("#dytp").val();
+                    var anlyData = resultData[tname];
+                    //遍历json数组
+                    console.log("当前选择的主题：" + tname);
+                    console.log(anlyData);
+                    anlyData.forEach(function (value, i) {
+                        if (time1.length < 100) {
+                            time1.push(value[0]);
+                            data1.push(value);
+                        }
+                    });
+                    console.log("调用动态订阅的方法------------");
+                    //*********************************************************************************
+                    //echart数据处理
+                    //*********************************************************************************
+                    $scope.data.connected = true;
+                    $scope.$apply();
+                });
+                //动态接收生产数据
+                stompClient.subscribe('/topic/producedynamic', function (r) {
+                    var resultData = JSON.parse(r.body);
+                    time2 = [];
+                    data2 = [];
+                    var tname = $("#dypr").val();
+                    var anlyData = resultData[tname];
+                    //遍历json数组
+                    console.log("当前选择的生产主题：" + tname);
+                    console.log(anlyData);
+                    anlyData.forEach(function (value, i) {
+                        if (time2.length < 100) {
+                            time2.push(value[0]);
+                            data2.push(value);
+                        }
+                    });
+                    console.log("调用生产动态订阅的方法------------");
+                    //*********************************************************************************
+                    //echart数据处理
+                    //*********************************************************************************
+                    $scope.data.connected = true;
+                    $scope.$apply();
+                });
+                // 信息回调(手动查询数据)
+                stompClient.subscribe('/topic/echart', function (r) {
+                    $scope.data.info = '服务器返回数据：' + r.body;
+                    //前端数据处理
+                    var resultData = JSON.parse(r.body);
+                    resultData.forEach(function (value, i) {
+                        if (time.length < 100) {
+                            time.push(value[0]);
+                            data.push(value);
+                        }
+                    });
+                    console.log("调用手动查询的方法------------");
+                    $scope.data.connected = true;
+                    $scope.$apply();
+                    $scope.data.connected = true;
+                    $scope.$apply();
+                });
+            });
+        };
+
+        $scope.disconnect = function () {
+            if (stompClient != null) {
+                stompClient.disconnect();
+            }
+            $scope.data.connected = false;
+        }
+
+        $scope.send = function () {
+            var topic = $("#topic").val();
+            stompClient.send("/app/echartData", {atytopic: topic}, $scope.data.message);
+        }
+        /* $scope.submitTopic = function () {
+             var name = $("#dytp").val();
+             $.get("setTopicName?name="+name);
+         }*/
+    });
+
+    //********************渲染echart***************************
+    //离线消费数据
+    /*option = {
+        title: {
+            text: '离线消费数据'
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                params = params[0];
+                return "时间" + params.value[0] + '<br> 个数:' + params.value[1];
+            },
+            axisPointer: {
+                animation: false
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: time,
+            name: "时间",
+            splitLine: {
+                show: false
+            }
+        },
+        yAxis: {
+            type: 'value',
+            name: "接收数量（单位：个）",
+            boundaryGap: [0, '100%'],
+            splitLine: {
+                show: false
+            }
+        },
+        series: [{
+            name: '模拟数据',
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            data: data
+        }]
+    };*/
+
+    //实时消费数据
+    option1 = {
+        title: {
+            text: '实时消费数据'
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                params = params[0];
+                return "时间" + params.value[0] + '<br> 个数:' + params.value[1];
+            },
+            axisPointer: {
+                animation: false
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: time1,
+            name: "时间",
+            splitLine: {
+                show: false
+            }
+        },
+        yAxis: {
+            type: 'value',
+            name: "接收数量（单位：个）",
+            boundaryGap: [0, '100%'],
+            splitLine: {
+                show: false
+            }
+        },
+        series: [{
+            name: '模拟数据',
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            data: data1
+        }]
+    };
+
+    //实时生产数据
+    option2 = {
+        title: {
+            text: '实时生产数据'
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                params = params[0];
+                return "时间" + params.value[0] + '<br> 个数:' + params.value[1];
+            },
+            axisPointer: {
+                animation: false
+            }
+        },
+        xAxis: {
+            type: 'category',
+            data: time2,
+            name: "时间",
+            splitLine: {
+                show: false
+            }
+        },
+        yAxis: {
+            type: 'value',
+            name: "发送数量（单位：个）",
+            boundaryGap: [0, '100%'],
+            splitLine: {
+                show: false
+            }
+        },
+        series: [{
+            name: '模拟数据',
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            data: data2
+        }]
+    };
+
+    setInterval(function () {
+        //离线消费
+        /*myChart.setOption({
+            xAxis: {
+                data: time
+            },
+            series: [{
+                data: data
+            }]
+
+        });*/
+        //实时消费
+        mChart.setOption({
+            xAxis: {
+                data: time1
+            },
+            series: [{
+                data: data1
+            }]
+
+        });
+        //实时生产
+        pChart.setOption({
+            xAxis: {
+                data: time2
+            },
+            series: [{
+                data: data2
+            }]
+
+        });
+    }, 1000);
+    //离线消费
+    /*if (option && typeof option === "object") {
+        myChart.setOption(option, true);
+    }*/
+    //实时消费
+    if (option1 && typeof option1 === "object") {
+        mChart.setOption(option1, true);
+    }
+    //实时生产
+    if (option2 && typeof option2 === "object") {
+        pChart.setOption(option2, true);
+    }
+</script>
+
+</body>
+</html>

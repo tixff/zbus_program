@@ -1,0 +1,5 @@
+<ehcache>
+    <cache name="consumer" maxEntriesLocalHeap="200" timeToLiveSeconds="600"/>
+    <cache name="produce" maxEntriesLocalHeap="200" timeToLiveSeconds="600"/>
+    <cache name="topic" maxEntriesLocalHeap="200" timeToLiveSeconds="600"/>
+</ehcache>

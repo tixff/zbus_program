@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ti.zbus_manager.mapper.TopicProduceMapper">
+    <resultMap id="BaseResultMap" type="com.ti.zbus_manager.entities.TopicProduce">
+        <id column="id" property="id"/>
+        <result column="produce_id" property="produceIp"/>
+        <result column="produce_time" property="produceTime"/>
+        <result column="topic_name" property="topicName"/>
+    </resultMap>
+
+
+    <select id="findProduceByTopicName" parameterType="string" resultMap="BaseResultMap">
+        select * from topic_produce where topic_name=#{topicName};
+    </select>
+
+    <select id="findProduceByDateRange" parameterType="com.ti.zbus_manager.parameter.AnalyzeQueryParameter" resultMap="BaseResultMap">
+        select * from topic_produce where produce_time>#{startTime} and produce_time &lt; #{endTime}
+    </select>
+
+    <insert id="addTopicProduce" parameterType="com.ti.zbus_manager.entities.TopicProduce" >
+        insert into topic_produce(produce_ip,produce_time,topic_name)
+        values(#{produceIp},#{produceTime},#{topicName})
+    </insert>
+</mapper>

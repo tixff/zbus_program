@@ -5,9 +5,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
-
 @Data
+
 public class TopicAnalyze {
 
     @ApiModelProperty("id")
@@ -28,6 +29,11 @@ public class TopicAnalyze {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private Date receivedTime;
+
+
+    public String getReceivedTimeStr(){
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(receivedTime);
+    }
 
     @ApiModelProperty("消息内容")
     private String receivedDesc;

@@ -10,8 +10,8 @@ import java.util.Date;
 
 public class DateUtils {
     private static final Logger logger = LoggerFactory.getLogger(DateUtils.class);
-    public static final String YYYY_MM_DD_hh_mm_ss = "yyyy-MM-dd hh:mm:ss";
-    public static final String YYYY_MM_DD_hh_mm = "yyyy-MM-dd hh:mm";
+    public static final String YYYY_MM_DD_HH_mm_ss = "yyyy-MM-dd HH:mm:ss";
+    public static final String YYYY_MM_DD_HH_mm = "yyyy-MM-dd HH:mm";
 
     public static SimpleDateFormat getDateFormat(String format) {
         return new SimpleDateFormat(format);
@@ -24,7 +24,7 @@ public class DateUtils {
      * @return
      */
     public static int getDateMinute(Date date) {
-        String time = DateUtils.getDateFormat(DateUtils.YYYY_MM_DD_hh_mm_ss).format(date);
+        String time = DateUtils.getDateFormat(DateUtils.YYYY_MM_DD_HH_mm_ss).format(date);
         String[] strings = time.split(" ");
         String[] split = strings[1].split(":");
         return Integer.parseInt(split[1]);
@@ -46,10 +46,10 @@ public class DateUtils {
     }
 
     public static Date getNoSecondDate(Date date){
-        String dateStr = getDateFormat(YYYY_MM_DD_hh_mm).format(date);
+        String dateStr = getDateFormat(YYYY_MM_DD_HH_mm).format(date);
         Date minuteDate = null;
         try {
-            minuteDate = getDateFormat(YYYY_MM_DD_hh_mm).parse(dateStr);
+            minuteDate = getDateFormat(YYYY_MM_DD_HH_mm).parse(dateStr);
             return minuteDate;
         } catch (ParseException e) {
             e.printStackTrace();

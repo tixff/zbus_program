@@ -3,13 +3,15 @@ package com.ti.zbus_manager.service.impl;
 import com.ti.zbus_manager.config.ZbusConfig;
 import com.ti.zbus_manager.entities.Topic;
 import com.ti.zbus_manager.entities.TopicAnalyze;
+import com.ti.zbus_manager.entities.TopicProduce;
 import com.ti.zbus_manager.mapper.TopicAnalyzeMapper;
 import com.ti.zbus_manager.mapper.TopicMapper;
+import com.ti.zbus_manager.mapper.TopicProduceMapper;
 import com.ti.zbus_manager.parameter.AnalyzeQueryParameter;
 import com.ti.zbus_manager.service.TopicAnalyzeService;
 import com.ti.zbus_manager.util.DateUtils;
 import com.ti.zbus_manager.vo.ConsumerVo;
-import com.ti.zbus_manager.vo.Serie;
+import com.ti.zbus_manager.vo.ResultAnalyzeData;
 import io.zbus.mq.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,14 +20,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 @Service
 public class TopicAnalyzeServiceImpl implements TopicAnalyzeService {
 
     private static Logger logger = LoggerFactory.getLogger(TopicAnalyzeServiceImpl.class);
-    private static final int THIRTY_MINUTE = 30;
-    private boolean flag = false;
+    private static final int MINUTE = 100;
 
     @Autowired
     private ZbusConfig zbusConfig;
@@ -33,6 +33,8 @@ public class TopicAnalyzeServiceImpl implements TopicAnalyzeService {
     private TopicAnalyzeMapper mapper;
     @Autowired
     private TopicMapper topicMapper;
+    @Autowired
+    private TopicProduceMapper topicProduceMapper;
 
     /**
      * 获取所有主题消费信息
@@ -83,18 +85,18 @@ public class TopicAnalyzeServiceImpl implements TopicAnalyzeService {
     }
 
     /**
-     * 发送消息到给定主题
+     * 发送消息到给定主题并记录发送者信息
      *
      * @param topicName
      * @param message
      */
     @Override
-    public void produceMessage(String topicName, String message) {
+    public void produceMessage(String topicName, String message,String ip) {
         Topic topic = topicMapper.findTopicByName(topicName);
         if (topic == null) {
             return;
         }
-        Broker broker = new Broker("localhost:15555");
+        Broker broker = new Broker(zbusConfig.getHost());
         Producer p = new Producer(broker);
         //创建topic
         //p.declareTopic("xff_topic");    //当确定队列不存在需创建
@@ -105,6 +107,12 @@ public class TopicAnalyzeServiceImpl implements TopicAnalyzeService {
         System.out.println(message);
         try {
             Message res = p.publish(msg);
+            //记录发送者信息
+            TopicProduce topicProduce = new TopicProduce();
+            topicProduce.setProduceIp(ip);
+            topicProduce.setProduceTime(new Date());
+            topicProduce.setTopicName(topicName);
+            topicProduceMapper.addTopicProduce(topicProduce);
             broker.close();
         } catch (Exception e) {
             logger.error("发送消息失败");
@@ -113,20 +121,46 @@ public class TopicAnalyzeServiceImpl implements TopicAnalyzeService {
     }
 
     /**
-     * 获取给定时间前30分钟的消费信息
+     * 获取给定时间前100分钟的消费信息
      *
      * @param date
      * @return
      */
     @Override
-    public HashMap<String, ArrayList> getAnalyzeData(Date date) {
+    public ResultAnalyzeData getConsumerAnalyzeData(Date date, String topicName) {
+        ResultAnalyzeData resultData = new ResultAnalyzeData();
+        ArrayList<Topic> aLlTopic = topicMapper.getALlTopic();
+        ArrayList<String> topicNames = new ArrayList<>();
+        aLlTopic.forEach(t ->
+                topicNames.add(t.getName())
+        );
+        resultData.setTopicNames(topicNames);
         AnalyzeQueryParameter parameter = new AnalyzeQueryParameter();
-        Date startTime = DateUtils.getMinuteAgoTime(date, THIRTY_MINUTE);
+        Date startTime = DateUtils.getMinuteAgoTime(date, MINUTE);
         parameter.setEndTime(date);
         parameter.setStartTime(startTime);
         ArrayList<TopicAnalyze> list = mapper.getAnalyzeInfoByDateRange(parameter);
-        HashMap<String, ArrayList> resultMap = toAnalyzeData(list, date);
-        return resultMap;
+        resultData.setList(list);
+        resultData.setDate(date);
+        resultData.setDateRange(MINUTE);
+        resultData.setTopicName(topicName);
+        //HashMap<String, ArrayList> resultMap = toAnalyzeData(list, date);
+        return resultData;
+    }
+
+    @Override
+    public ResultAnalyzeData getProduceAnalyzeData() {
+        ResultAnalyzeData resultData = new ResultAnalyzeData();
+        Date endDate = new Date();
+        Date startTime = DateUtils.getMinuteAgoTime(endDate, MINUTE);
+
+        AnalyzeQueryParameter parameter = new AnalyzeQueryParameter();
+        parameter.setStartTime(startTime);
+        parameter.setEndTime(endDate);
+        ArrayList<TopicProduce> produceList = topicProduceMapper.findProduceByDateRange(parameter);
+        resultData.setProduceList(produceList);
+        resultData.setDate(endDate);
+        return resultData;
     }
 
     /**
@@ -143,69 +177,5 @@ public class TopicAnalyzeServiceImpl implements TopicAnalyzeService {
         return vo;
     }
 
-    /**
-     * 前端所需数据格式转换
-     *
-     * @param list
-     * @param date
-     * @return
-     */
-    private HashMap<String, ArrayList> toAnalyzeData(ArrayList<TopicAnalyze> list, Date date) {
-        HashMap<String, ArrayList> resultMap = new HashMap<>();
 
-        //添加30分钟的时间范围
-        ArrayList<String> dateList = new ArrayList<>();
-        for (int i = 0; i < THIRTY_MINUTE; i++) {
-            Date minuteAgoTime = DateUtils.getMinuteAgoTime(date, THIRTY_MINUTE - i);
-            minuteAgoTime = DateUtils.getNoSecondDate(minuteAgoTime);
-            String minuteAgoTimeStr = DateUtils.getDateFormat(DateUtils.YYYY_MM_DD_hh_mm).format(minuteAgoTime);
-            dateList.add(minuteAgoTimeStr);
-        }
-        resultMap.put("dateRange", dateList);
-        if (list == null || list.size() < 1) {
-            return resultMap;
-        }
-        //获取名称list
-        ArrayList<String> topicNames = new ArrayList<>();
-        list.forEach(o -> {
-            boolean contains = topicNames.contains(o.getTopicName());
-            if (!contains) {
-                topicNames.add(o.getTopicName());
-            }
-        });
-
-        //添加serie数据
-        ArrayList<Serie> series = new ArrayList();
-        topicNames.forEach(o -> {
-            Serie serie = new Serie();
-            serie.setName(o);
-            ArrayList<Integer> data = new ArrayList<>();
-            dateList.forEach(time -> {
-                TopicAnalyze t = findTopicAnalyzeByNameAndTime(list, o, time);
-                if (t == null) {
-                    data.add(0);
-                } else {
-                    data.add(t.getReceivedCount());
-                }
-            });
-            serie.setData(data);
-            series.add(serie);
-        });
-
-        resultMap.put("series", series);
-        return resultMap;
-    }
-
-    private TopicAnalyze findTopicAnalyzeByNameAndTime(ArrayList<TopicAnalyze> list, String topicName, String time) {
-        for (TopicAnalyze l : list) {
-            String name = l.getTopicName();
-            Date receivedTime = l.getReceivedTime();
-            String receivedTimeStr = DateUtils.getDateFormat(DateUtils.YYYY_MM_DD_hh_mm)
-                    .format(DateUtils.getNoSecondDate(receivedTime));
-            if (name.equals(topicName) && receivedTimeStr.equals(time)) {
-                return l;
-            }
-        }
-        return null;
-    }
 }

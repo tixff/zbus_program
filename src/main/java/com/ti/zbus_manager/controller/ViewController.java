@@ -15,4 +15,9 @@ public class ViewController {
     public String manager(){
         return "topic";
     }
+
+    @GetMapping("/echart")
+    public String echart(){
+        return "dynamic-data";
+    }
 }

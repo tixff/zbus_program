@@ -39,6 +39,10 @@
             //添加消费者
             $("#addConsumer").click(function () {
                 var topicName = $("#consumers").val();
+                if(topicName == null || topicName == '' || topicName == undefined || topicName == ""){
+                    alert("请先选择主题");
+                    return;
+                }
                 $.post("addConsumer", {'topicName': topicName}, function (result) {
                     alert("message:" + result.message);
                 });
@@ -47,6 +51,10 @@
             //发送消息
             $("#produceMessage").click(function () {
                 var topicName = $("#produce").val();
+                if(topicName == null || topicName == '' || topicName == undefined || topicName == ""){
+                    alert("请先选择主题");
+                    return;
+                }
                 var message = $("#info").val();
                 $.post("produce", {'topicName': topicName, 'message': message}, function (result) {
                     alert("message:" + result.message);
